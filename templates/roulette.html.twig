@@ -1,0 +1,120 @@
+{% extends 'base_template.html.twig' %}
+
+{% block title %}
+	{{ constantes.application.website_name }}
+{% endblock %}
+
+{% block body %}
+
+	<header class="text-center mb-5">
+		<h1 class="display-4">
+			Roulette
+		</h1>
+	</header>
+
+	<div class="card p-4 mb-4">
+		<h2 class="h5 mb-4 border-bottom pb-2 text-uppercase" style="letter-spacing: 1px;">
+			<i class="bi bi-people me-2"></i>
+			Participants
+		</h2>
+
+		<form method="POST">
+			<div class="row g-3">
+				{% for user in users %}
+					<div class="col-6 col-md-3">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="present[]" value="{{ user }}" id="check_{{ user }}" {% if user in present %} checked {% endif %}>
+							<label class="form-check-label" for="check_{{ user }}">{{ user }}</label>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+
+			<div class="text-center mt-4">
+				<button type="submit" class="btn btn-success px-4">
+					<i class="bi bi-check-circle me-2"></i>Confirmer la présence
+				</button>
+			</div>
+		</form>
+	</div>
+
+	{% if present is not empty %}
+
+		<div class="card p-4 mb-4 border-0" style="background: transparent; box-shadow: none;">
+			<div class="d-flex gap-3 justify-content-center flex-wrap align-items-center">
+				{% for p in present %}
+					<input type="hidden" class="present-hidden" value="{{ p }}">
+				{% endfor %}
+				{% for u in users %}
+					<input type="hidden" class="gens-hidden" value="{{ u }}">
+				{% endfor %}
+
+				<button name="action" value="random" class="btn btn-primary" id="btn-random">
+					<i class="bi bi-dice-5 me-2"></i>Au hasard
+				</button>
+				<button name="action" value="commune" class="btn btn-warning" id="btn-commune">
+					<i class="bi bi-stars me-2"></i>Watchlist commune
+				</button>
+				<button name="action" value="absent" class="btn btn-danger" id="btn-absent">
+					<i class="bi bi-eye-slash me-2"></i>Vu par les absents
+				</button>
+
+				<div class="form-check form-switch ms-3">
+					<input class="form-check-input" type="checkbox" id="court">
+					<label class="form-check-label small fw-bold" for="court">moins de 2h</label>
+				</div>
+				<div class="form-check form-switch ms-3">
+					<input class="form-check-input" type="checkbox" id="long">
+					<label class="form-check-label small fw-bold" for="long">plus de 2h</label>
+				</div>
+			</div>
+		</div>
+
+		<div id="resultat-film"></div>
+
+		<div class="mt-5">
+			<h2 class="h5 mb-4 text-center text-muted text-uppercase" style="letter-spacing: 2px;">
+				<i class="bi bi-cloud-arrow-up me-2"></i>
+				Gérer vos données
+			</h2>
+
+			<div class="row g-4">
+				{% for user in present %}
+					<div class="col-md-6">
+						<div class="card p-4 upload-section">
+							<h4 class="h6 mb-3">
+								<i class="bi bi-person-circle me-2"></i>
+								{{ user }}
+							</h4>
+							<form method="POST" enctype="multipart/form-data">
+								<input type="hidden" name="update_user" value="{{ user }}">
+								<div class="mb-3">
+									<label class="form-label small fw-bold">Watched (CSV)</label>
+									<input type="file" name="watched" class="form-control form-control-sm">
+								</div>
+								<div class="mb-3">
+									<label class="form-label small fw-bold">Watchlist (CSV)</label>
+									<input type="file" name="watchlist" class="form-control form-control-sm">
+								</div>
+								<button type="submit" name="update_action" value="upload" class="btn btn-sm btn-outline-secondary w-100">
+									Mettre à jour
+								</button>
+							</form>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+
+	{% endif %}
+
+	{% if upload_messages is not empty %}
+		<div class="alert alert-info border-0 shadow-sm mt-3">
+			<i class="bi bi-info-circle-fill me-2"></i>
+			{% for msg in upload_messages %}
+				<span class="ms-4">{{ msg }}</span><br>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+{% endblock %}

@@ -1,4 +1,8 @@
 # Configuration de l'application
 application:
-    language: "fr" # Langue du site (utilisé dans la balise HTML)
-    website_name: "Roulette Film" # Nom du site web
+    language: "fr"
+    website_name: "Roulette Film"
+
+# APIs
+api:
+    omdb_key: "afe2ef4c"

@@ -1,38 +1,52 @@
-        document.addEventListener('DOMContentLoaded', function() {
-            // On cible les 3 boutons de la roulette
-            const buttons = document.querySelectorAll('button[name="action"]');
-            const resultDiv = document.getElementById('resultat-film');
+document.addEventListener('DOMContentLoaded', function () {
 
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const court = document.getElementById('court').checked;
+    const resultDiv = document.getElementById('resultat-film');
+    if (!resultDiv) return;
 
-                    // Récupérer les participants cochés
-                    const present = Array.from(document.querySelectorAll('input[name="present[]"]:checked')).map(cb => cb.value);
-                    // Récupérer tous les participants possible
-                    const gens = Array.from(document.querySelectorAll('input[name="present[]"]')).map(cb => cb.value);
+    const buttons = [
+        { id: 'btn-random',  action: 'random'  },
+        { id: 'btn-commune', action: 'commune' },
+        { id: 'btn-absent',  action: 'absent'  },
+    ];
 
-                    if (present.length === 0) return alert("Choisis au moins une personne !");
+    buttons.forEach(function({ id, action }) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
 
-                    // Animation d'attente omg 
-                    resultDiv.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-warning"></div></div>';
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
 
-                    // Envoi des données vers le même fichier PHP
-                    const formData = new FormData();
-                    formData.append('ajax_action', this.value); // On utilise ajax_action pour que le PHP nous reconnaisse trop smart :D
-                    present.forEach(p => formData.append('present[]', p));
-                    gens.forEach(g => formData.append('gens[]', g));
+            const court   = document.getElementById('court') ? document.getElementById('court').checked : false;
+            const present = Array.from(document.querySelectorAll('.present-hidden')).map(function(el) { return el.value; });
+            const gens    = Array.from(document.querySelectorAll('.gens-hidden')).map(function(el) { return el.value; });
 
-                    formData.append('court', court);
-                    fetch(window.location.href, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(res => res.text())
-                        .then(html => {
-                            resultDiv.innerHTML = html;
-                        });
-                });
+            if (present.length === 0) {
+                alert('Choisis au moins une personne !');
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-warning" role="status"></div></div>';
+
+            const formData = new FormData();
+            formData.append('ajax_action', action);
+            present.forEach(function(p) { formData.append('present[]', p); });
+            gens.forEach(function(g) { formData.append('gens[]', g); });
+            formData.append('court', court ? 'true' : 'false');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Erreur HTTP ' + res.status);
+                return res.text();
+            })
+            .then(function(html) {
+                resultDiv.innerHTML = html;
+            })
+            .catch(function(err) {
+                resultDiv.innerHTML = '<div class="alert alert-danger text-center"><i class="bi bi-exclamation-triangle me-2"></i>Erreur : ' + err.message + '</div>';
             });
         });
+    });
+});
