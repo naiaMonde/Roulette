@@ -1,0 +1,78 @@
+:root {
+    --warm-bg: #fdfaf5;
+    --accent-color: #e67e22;
+    --secondary-color: #d35400;
+    --card-border: #eee2d7;
+    --text-main: #4a3f35;
+}
+
+body {
+    background-color: var(--warm-bg);
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Playfair Display', serif;
+    color: #2c2520;
+}
+
+.card {
+    border: 1px solid var(--card-border);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    background-color: #fff;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    border-radius: 10px;
+    padding: 10px 20px;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-success {
+    background-color: #5d6d31;
+    border-color: #5d6d31;
+    border-radius: 10px;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+    border-color: #f39c12;
+    color: white;
+    border-radius: 10px;
+}
+
+.btn-danger {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    border-radius: 10px;
+}
+
+.form-check-input:checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.movie-poster {
+    transition: transform 0.3s ease;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.movie-poster:hover {
+    transform: scale(1.02);
+}
+
+.upload-section {
+    background-color: #f9f5f0;
+    border: 1px dashed #d1c4b9;
+}

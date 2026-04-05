@@ -1,15 +1,2 @@
-# On ignore tout
-/*
-
-# Sauf ces dossiers
-!controlers/
-!templates/
-!config/*
-!/JS
-
-# Sauf ces fichiers
-!.gitignore
-!index.php
-!index.php
-!include.php
-!README.md
+vendor/
+node_modules/
