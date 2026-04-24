@@ -1,8 +1,0 @@
-# Configuration de l'application
-application:
-    language: "fr"
-    website_name: "Roulette Film"
-
-# APIs
-api:
-    omdb_key: "afe2ef4c"
