@@ -68,7 +68,3 @@ class Controller{
         $this->post = $post;
     }
 }
-
-
-
-
