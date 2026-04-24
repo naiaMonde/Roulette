@@ -16,7 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
 
-            const court   = document.getElementById('court') ? document.getElementById('court').checked : false;
+            // Lecture du filtre durée (radio)
+            const dureeSelected = document.querySelector('input[name="duree"]:checked');
+            const duree = dureeSelected ? dureeSelected.value : 'aucun';
+            const court = (duree === 'court');
+            const long  = (duree === 'long');
+
             const present = Array.from(document.querySelectorAll('.present-hidden')).map(function(el) { return el.value; });
             const gens    = Array.from(document.querySelectorAll('.gens-hidden')).map(function(el) { return el.value; });
 
@@ -30,8 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const formData = new FormData();
             formData.append('ajax_action', action);
             present.forEach(function(p) { formData.append('present[]', p); });
-            gens.forEach(function(g) { formData.append('gens[]', g); });
+            gens.forEach(function(g)    { formData.append('gens[]', g); });
             formData.append('court', court ? 'true' : 'false');
+            formData.append('long',  long  ? 'true' : 'false');
 
             fetch(window.location.href, {
                 method: 'POST',
