@@ -2,14 +2,14 @@
 
 class ControllerUtilisateur extends Controller
 {
-    // =========================================================
-    // POINT D'ENTRÉE PRINCIPAL
-    // =========================================================
-
     public function index(): void
     {
         if (isset($_POST['ajax_action'])) {
-            $this->ajaxFilm();
+            if ($_POST['ajax_action'] === 'marquer_vu') {
+                $this->marquerVu();
+            } else {
+                $this->ajaxFilm();
+            }
             exit;
         }
 
@@ -18,7 +18,11 @@ class ControllerUtilisateur extends Controller
             $uploadMessages = $this->handleUpload();
         }
 
-        $users   = $this->getUsers();
+        $currentUser = ControllerAuth::currentUser();
+        $friends     = ControllerProfil::getFriends($currentUser);
+        // L'utilisateur connecté + ses amis
+        $users       = array_merge([$currentUser], $friends);
+
         $present = $_POST['present'] ?? [];
 
         echo $this->getTwig()->render('roulette.html.twig', [
@@ -27,10 +31,6 @@ class ControllerUtilisateur extends Controller
             'upload_messages' => $uploadMessages,
         ]);
     }
-
-    // =========================================================
-    // AJAX : TIRER UN FILM AU SORT
-    // =========================================================
 
     private function ajaxFilm(): void
     {
@@ -55,6 +55,7 @@ class ControllerUtilisateur extends Controller
         }
 
         $film = null;
+
 
         if ($court) {
             // Filtre : moins de 2h
@@ -81,13 +82,24 @@ class ControllerUtilisateur extends Controller
                 }
             }
         } else {
-            // Pas de filtre : on tire au hasard directement
-            if (!empty($filmsPossibles)) {
-                $f    = $filmsPossibles[array_rand($filmsPossibles)];
+            shuffle($filmsPossibles);
+            foreach ($filmsPossibles as $f) {
                 $data = $this->fetchOMDb($f['title']);
                 if ($data && ($data['Response'] ?? '') === 'True') {
                     $film = $this->buildFilmData($f, $data);
+                } else {
+                    // OMDb ne connaît pas le film, on affiche quand même le minimum
+                    $film = [
+                        'title'          => $f['title'],
+                        'year'           => '?',
+                        'poster'         => '',
+                        'duration'       => 'Durée inconnue',
+                        'genre'          => 'Inconnu',
+                        'plot'           => '',
+                        'letterboxd_url' => $f['url'],
+                    ];
                 }
+                break; // on prend le premier dans tous les cas
             }
         }
 
@@ -98,20 +110,12 @@ class ControllerUtilisateur extends Controller
         ]);
     }
 
-    // =========================================================
-    // PARSING DURÉE OMDB
-    // =========================================================
-
     private function parseRuntime(?array $data): int
     {
         if (!$data || ($data['Response'] ?? '') !== 'True') return 0;
         preg_match('/(\d+)/', $data['Runtime'] ?? '', $matches);
         return isset($matches[1]) ? (int) $matches[1] : 0;
     }
-
-    // =========================================================
-    // CONSTRUCTION DES DONNÉES D'UN FILM POUR LE TEMPLATE
-    // =========================================================
 
     private function buildFilmData(array $f, array $data): array
     {
@@ -129,10 +133,6 @@ class ControllerUtilisateur extends Controller
             'letterboxd_url' => $f['url'],
         ];
     }
-
-    // =========================================================
-    // UPLOAD CSV
-    // =========================================================
 
     private function handleUpload(): array
     {
@@ -164,10 +164,6 @@ class ControllerUtilisateur extends Controller
         return "{$key} mis à jour avec succès.";
     }
 
-    // =========================================================
-    // LISTE DES UTILISATEURS DISPONIBLES
-    // =========================================================
-
     private function getUsers(): array
     {
         $users = [];
@@ -179,10 +175,6 @@ class ControllerUtilisateur extends Controller
         }
         return $users;
     }
-
-    // =========================================================
-    // CHARGEMENT DES PROFILS CSV
-    // =========================================================
 
     private function chargerProfil(string $user): array
     {
@@ -215,10 +207,6 @@ class ControllerUtilisateur extends Controller
         return array_map(fn($u) => $this->chargerProfil($u), $users);
     }
 
-    // =========================================================
-    // LOGIQUE DE SÉLECTION DES FILMS
-    // =========================================================
-
     private function filmsPossibles(array $profils): array
     {
         $vus   = $this->titresVus($profils);
@@ -239,25 +227,27 @@ class ControllerUtilisateur extends Controller
     {
         $candidats   = $this->filmsPossibles($profils);
         $nbPersonnes = count($profils);
+        $seuilMin    = 8;
 
         $counts = [];
         foreach ($candidats as $film) {
             $counts[$film['title']] = ($counts[$film['title']] ?? 0) + 1;
         }
 
+        $res  = [];
+        $seen = [];
+
         for ($seuil = $nbPersonnes; $seuil >= 2; $seuil--) {
-            $res  = [];
-            $seen = [];
             foreach ($candidats as $film) {
                 if ($counts[$film['title']] >= $seuil && !in_array($film['title'], $seen)) {
                     $res[]  = $film;
                     $seen[] = $film['title'];
                 }
             }
-            if (!empty($res)) return $res;
+            if (count($res) >= $seuilMin) break;
         }
 
-        return [];
+        return $res;
     }
 
     private function dejaVu(array $profils, array $profilsAbsents): array
@@ -288,13 +278,17 @@ class ControllerUtilisateur extends Controller
         return $titres;
     }
 
-    // =========================================================
-    // API OMDB
-    // =========================================================
-
     private function fetchOMDb(string $title): ?array
     {
-        $apiKey   = Config::get()['api']['omdb_key'];
+        try {
+            $apiKey = Config::get()['api']['omdb_key'];
+            if (!$apiKey) {
+                throw new Exception("Clé API OMDb manquante dans la configuration.");
+            }
+        } catch (Exception $e) {
+            error_log("Erreur de configuration : " . $e->getMessage());
+            return null;
+        }
         $url      = "https://www.omdbapi.com/?apikey={$apiKey}&t=" . urlencode($title);
         $response = @file_get_contents($url);
 
@@ -303,4 +297,71 @@ class ControllerUtilisateur extends Controller
         $data = json_decode($response, true);
         return $data ?: null;
     }
+
+    private function marquerVu(): void
+    {
+        $present = $_POST['present'] ?? [];
+        $title   = $_POST['title']   ?? '';
+        $url     = $_POST['url']     ?? '';
+
+        if (empty($present) || empty($title)) {
+            echo json_encode(['success' => false, 'message' => 'Données manquantes']);
+            return;
+        }
+
+        $errors = [];
+        foreach ($present as $user) {
+            $watchlistPath = "Data/{$user}/watchlist.csv";
+            $watchedPath   = "Data/{$user}/watched.csv";
+
+            // Supprimer de la watchlist si présent
+            if (file_exists($watchlistPath)) {
+                $rows    = [];
+                $f       = fopen($watchlistPath, 'r');
+                $header  = fgetcsv($f);
+                while (($row = fgetcsv($f)) !== false) {
+                    if (($row[1] ?? '') !== $title) {
+                        $rows[] = $row;
+                    }
+                }
+                fclose($f);
+
+                $f = fopen($watchlistPath, 'w');
+                fputcsv($f, $header);
+                foreach ($rows as $row) fputcsv($f, $row);
+                fclose($f);
+            }
+
+            // Ajouter dans watched si pas déjà présent
+            if (file_exists($watchedPath)) {
+                $already = false;
+                $f       = fopen($watchedPath, 'r');
+                $header  = fgetcsv($f);
+                $rows    = [];
+                while (($row = fgetcsv($f)) !== false) {
+                    if (($row[1] ?? '') === $title) $already = true;
+                    $rows[] = $row;
+                }
+                fclose($f);
+
+                if (!$already) {
+                    $date  = date('Y-m-d');
+                    $rows[] = ['', $title, $date, $url];
+                    $f = fopen($watchedPath, 'w');
+                    fputcsv($f, $header);
+                    foreach ($rows as $row) fputcsv($f, $row);
+                    fclose($f);
+                }
+            } else {
+                $errors[] = "Pas de fichier watched pour {$user}";
+            }
+        }
+
+        if (empty($errors)) {
+            echo json_encode(['success' => true, 'message' => 'Film marqué comme vu']);
+        } else {
+            echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
+        }
+    }
+
 }

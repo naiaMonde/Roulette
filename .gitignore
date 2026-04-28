@@ -1,4 +1,4 @@
-vendor/
-node_modules/
-config/
-Data/
+/vendor/
+/node_modules/
+/config/
+/Data/

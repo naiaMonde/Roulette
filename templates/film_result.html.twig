@@ -28,21 +28,25 @@
 					<a href="https://www.justwatch.com/fr/recherche?q={{ film.title|url_encode }}" target="_blank" class="btn btn-outline-dark mt-2">
 						Où regarder ?
 					</a>
+					<button class="btn btn-success mt-2" class="btn-vu" 
+						data-title="{{ film.title }}"
+						data-url="{{ film.letterboxd_url }}">
+						<i class="bi bi-check2-circle me-2"></i> Marquer comme vu
+					</button>
 				</div>
 			</div>
 		</div>
 	</div>
 {% else %}
-	<div class="alert alert-warning border shadow-sm text-center py-4">
-		<i class="bi bi-exclamation-triangle me-2"></i>
-		Aucun film trouvé
-        {% if court && long %}
-            gros kaka va enlève les deux filtres
-		{% elseif court %}
-			(surtout avec le filtre -2h)
-		{% endif %}
+    <div class="alert alert-warning border shadow-sm text-center py-4">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Aucun film trouvé
+        {% if court and long %}
+            (Attention : vous avez coché les deux filtres de durée !)
+        {% elseif court %}
+            (surtout avec le filtre -2h)
         {% elseif long %}
-			(surtout avec le filtre + 2h)
-		{% endif %}.
-	</div>
+            (surtout avec le filtre +2h)
+        {% endif %}.
+    </div>
 {% endif %}
