@@ -1,0 +1,100 @@
+{% extends 'base_template.html.twig' %}
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+
+<header class="text-center mb-5">
+    <h1 class="display-4">
+        <i class="bi bi-film me-2"></i>Bienvenue
+    </h1>
+    <p class="text-muted">Connecte-toi pour accéder à la roulette</p>
+</header>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <ul class="nav nav-tabs mb-0" id="authTabs">
+            <li class="nav-item">
+                <button class="nav-link {% if show_register is not defined %}active{% endif %}"
+                        data-bs-toggle="tab" data-bs-target="#tab-login">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link {% if show_register is defined %}active{% endif %}"
+                        data-bs-toggle="tab" data-bs-target="#tab-register">
+                    <i class="bi bi-person-plus me-1"></i>Inscription
+                </button>
+            </li>
+        </ul>
+
+        <div class="card p-4" style="border-top-left-radius: 0;">
+            <div class="tab-content">
+
+                {# CONNEXION #}
+                <div class="tab-pane fade {% if show_register is not defined %}show active{% endif %}" id="tab-login">
+
+                    {% if error is defined %}
+                        <div class="alert alert-warning border-0 shadow-sm mb-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        <input type="hidden" name="login_action" value="1">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Pseudo</label>
+                            <input type="text" name="pseudo" class="form-control"
+                                   value="{{ pseudo ?? '' }}" required autofocus>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Mot de passe</label>
+                            <input type="password" name="mdp" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                        </button>
+                    </form>
+                </div>
+
+                {# INSCRIPTION #}
+                <div class="tab-pane fade {% if show_register is defined %}show active{% endif %}" id="tab-register">
+
+                    {% if register_errors is defined %}
+                        <div class="alert alert-warning border-0 shadow-sm mb-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            {% for err in register_errors %}
+                                <div>{{ err }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        <input type="hidden" name="register_action" value="1">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Pseudo</label>
+                            <input type="text" name="pseudo" class="form-control"
+                                   value="{{ register_pseudo ?? '' }}" required>
+                            <div class="form-text">Lettres, chiffres, - et _ uniquement.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Mot de passe</label>
+                            <input type="password" name="mdp" class="form-control" required>
+                            <div class="form-text">6 caractères minimum.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Confirmer</label>
+                            <input type="password" name="confirm" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-person-check me-2"></i>Créer mon compte
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
