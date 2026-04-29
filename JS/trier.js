@@ -25,7 +25,7 @@
 
             let items = getItems();
 
-            // --- Filter ---
+            // Filtrer
             items.forEach(item => {
                 const title = (item.dataset.title || '').toLowerCase();
                 if (title.includes(query)) {
@@ -35,7 +35,7 @@
                 }
             });
 
-            // --- Sort visible items ---
+            // Triage de la recherche
             const visible = items.filter(i => i.style.display !== 'none');
 
             visible.sort((a, b) => {
@@ -56,10 +56,10 @@
                 }
             });
 
-            // Re-append in sorted order
+            // Ajouter dans l'odre
             visible.forEach(item => list.appendChild(item));
 
-            // --- Update count & empty message ---
+            // MaJ du compteur
             if (countEl) {
                 countEl.textContent = visible.length + ' film' + (visible.length !== 1 ? 's' : '');
             }
