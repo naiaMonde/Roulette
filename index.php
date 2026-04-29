@@ -17,6 +17,10 @@ try {
         $controleur = 'auth';
     }
 
+    if (ControllerAuth::isLogged()) {
+        $twig->addGlobal('user', ControllerAuth::currentUser());
+    }
+
     $controller = ControllerFactory::getController($controleur, $loader, $twig);
     $controller->call('index');
 } catch (Exception $e) {
