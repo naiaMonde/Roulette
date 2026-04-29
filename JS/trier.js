@@ -27,8 +27,12 @@
 
             // --- Filter ---
             items.forEach(item => {
-                const title = item.dataset.title || '';
-                item.style.display = title.includes(query) ? '' : 'none';
+                const title = (item.dataset.title || '').toLowerCase();
+                if (title.includes(query)) {
+                    item.style.display = '';
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                }
             });
 
             // --- Sort visible items ---
