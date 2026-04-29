@@ -93,9 +93,12 @@ class ControllerProfil extends Controller
         $first = true;
         while (($row = fgetcsv($f)) !== false) {
             if ($first) { $first = false; continue; }
-            if (isset($row[1], $row[3])) {
-                $films[] = ['title' => $row[1], 'url' => $row[3]];
-            }
+            $films[] = [
+                    'title' => $row[1],
+                    'year'  => isset($row[2]) ? (int)$row[2] : 0,
+                    'date'  => $row[0] ?? '',
+                    'url'   => $row[3],
+                ];
         }
         fclose($f);
         return $films;

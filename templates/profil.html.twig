@@ -108,21 +108,55 @@
         <i class="bi bi-bookmark-heart me-2"></i>Ma Watchlist
         <span class="badge bg-secondary ms-2">{{ watchlist|length }}</span>
     </h2>
+
+    {% if watchlist is not empty %}
+    {# Barre filtres watchlist #}
+    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+        <div class="input-group input-group-sm" style="max-width: 260px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="search-watchlist" placeholder="Rechercher un film...">
+        </div>
+        <select class="form-select form-select-sm" id="sort-watchlist" style="max-width: 200px;">
+            <option value="date-desc">Date ajout (récent → ancien)</option>
+            <option value="date-asc">Date ajout (ancien → récent)</option>
+            <option value="alpha-asc">Titre (A → Z)</option>
+            <option value="alpha-desc">Titre (Z → A)</option>
+            <option value="year-desc">Année (récent → ancien)</option>
+            <option value="year-asc">Année (ancien → récent)</option>
+        </select>
+        <span class="text-muted small" id="watchlist-visible-count"></span>
+    </div>
+    {% endif %}
+
     {% if watchlist is empty %}
         <p class="text-muted fst-italic">Aucun film dans ta watchlist.</p>
     {% else %}
         <div style="max-height: 350px; overflow-y: auto;">
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush" id="watchlist-list">
                 {% for film in watchlist %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span>{{ film.title }}</span>
-                        <a href="{{ film.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-box-arrow-up-right"></i>
-                        </a>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 film-item"
+                        data-title="{{ film.title|lower }}"
+                        data-year="{{ film.year }}"
+                        data-date="{{ film.date }}">
+                        <div>
+                            <span>{{ film.title }}</span>
+                            <span class="text-muted small ms-2">{{ film.year }}</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-success btn-sm btn-vu"
+                                data-title="{{ film.title }}"
+                                data-url="{{ film.url }}">
+                                <i class="bi bi-check2-circle me-1"></i>Vu
+                            </button>
+                            <a href="{{ film.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
         </div>
+        <p class="text-muted fst-italic mt-2" id="watchlist-empty-msg" style="display:none;">Aucun film ne correspond à ta recherche.</p>
     {% endif %}
 </div>
 
@@ -132,14 +166,40 @@
         <i class="bi bi-eye me-2"></i>Films vus
         <span class="badge bg-secondary ms-2">{{ watched|length }}</span>
     </h2>
+
+    {% if watched is not empty %}
+    {# Barre filtres watched #}
+    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+        <div class="input-group input-group-sm" style="max-width: 260px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="search-watched" placeholder="Rechercher un film...">
+        </div>
+        <select class="form-select form-select-sm" id="sort-watched" style="max-width: 200px;">
+            <option value="date-desc">Date ajout (récent → ancien)</option>
+            <option value="date-asc">Date ajout (ancien → récent)</option>
+            <option value="alpha-asc">Titre (A → Z)</option>
+            <option value="alpha-desc">Titre (Z → A)</option>
+            <option value="year-desc">Année (récent → ancien)</option>
+            <option value="year-asc">Année (ancien → récent)</option>
+        </select>
+        <span class="text-muted small" id="watched-visible-count"></span>
+    </div>
+    {% endif %}
+
     {% if watched is empty %}
         <p class="text-muted fst-italic">Aucun film vu enregistré.</p>
     {% else %}
         <div style="max-height: 350px; overflow-y: auto;">
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush" id="watched-list">
                 {% for film in watched %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <span>{{ film.title }}</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 film-item"
+                        data-title="{{ film.title|lower }}"
+                        data-year="{{ film.year }}"
+                        data-date="{{ film.date }}">
+                        <div>
+                            <span>{{ film.title }}</span>
+                            <span class="text-muted small ms-2">{{ film.year }}</span>
+                        </div>
                         <a href="{{ film.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-box-arrow-up-right"></i>
                         </a>
@@ -147,7 +207,8 @@
                 {% endfor %}
             </ul>
         </div>
+        <p class="text-muted fst-italic mt-2" id="watched-empty-msg" style="display:none;">Aucun film ne correspond à ta recherche.</p>
     {% endif %}
 </div>
-
+<script src="JS/trier.js"></script>
 {% endblock %}
