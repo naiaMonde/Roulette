@@ -13,3 +13,5 @@ npm install
 ```bash
 composer install
 ```
+
+Demander le fichier config pour pouvoir utiliser la roulette
