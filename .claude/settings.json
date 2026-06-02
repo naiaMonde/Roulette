@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Get-ChildItem -Path \"c:\\\\wamp64\\\\www\\\\Roulette\" -Recurse -Force)",
-      "Bash(Select-Object FullName)"
-    ]
-  }
-}
