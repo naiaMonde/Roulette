@@ -9,7 +9,13 @@ class ControllerProfil extends Controller
             exit;
         }
 
-        $user     = ControllerAuth::currentUser();
+        $user = ControllerAuth::currentUser();
+
+        if (isset($_POST['ajax_action']) && $_POST['ajax_action'] === 'marquer_vu') {
+            $this->marquerVu($user);
+            exit;
+        }
+
         $messages = [];
 
         if (isset($_POST['upload_action']))   $messages = $this->handleUpload($user);
@@ -123,5 +129,61 @@ class ControllerProfil extends Controller
         // Par défaut tous le monde sauf soi-même
         $all = array_keys($users);
         return $users[$user]['friends'] ?? array_values(array_filter($all, fn($u) => $u !== $user));
+    }
+
+    private function marquerVu(string $user): void
+    {
+        $title = $_POST['title'] ?? '';
+        $url   = $_POST['url']   ?? '';
+
+        if (empty($title)) {
+            echo json_encode(['success' => false, 'message' => 'Données manquantes']);
+            return;
+        }
+
+        $watchlistPath = "Data/{$user}/watchlist.csv";
+        $watchedPath   = "Data/{$user}/watched.csv";
+
+        if (file_exists($watchlistPath)) {
+            $rows   = [];
+            $f      = fopen($watchlistPath, 'r');
+            $header = fgetcsv($f);
+            while (($row = fgetcsv($f)) !== false) {
+                if (($row[1] ?? '') !== $title) {
+                    $rows[] = $row;
+                }
+            }
+            fclose($f);
+
+            $f = fopen($watchlistPath, 'w');
+            fputcsv($f, $header);
+            foreach ($rows as $row) fputcsv($f, $row);
+            fclose($f);
+        }
+
+        if (!file_exists($watchedPath)) {
+            echo json_encode(['success' => false, 'message' => "Fichier watched introuvable pour {$user}"]);
+            return;
+        }
+
+        $already = false;
+        $f       = fopen($watchedPath, 'r');
+        $header  = fgetcsv($f);
+        $rows    = [];
+        while (($row = fgetcsv($f)) !== false) {
+            if (($row[1] ?? '') === $title) $already = true;
+            $rows[] = $row;
+        }
+        fclose($f);
+
+        if (!$already) {
+            $rows[] = [date('Y-m-d'), $title, '', $url];
+            $f = fopen($watchedPath, 'w');
+            fputcsv($f, $header);
+            foreach ($rows as $row) fputcsv($f, $row);
+            fclose($f);
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Film marqué comme vu']);
     }
 }
