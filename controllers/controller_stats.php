@@ -95,32 +95,31 @@ class ControllerStats extends Controller
             $watchedFilms[] = ['title' => $title, 'url' => $watchedUrls[$title], 'count' => $count, 'total' => $nbPersonnes];
         }
 
-        // ── Decade distribution (watchlist + watched) ────────────
-        $decades        = [];
-        $decadesWatched = [];
-        $seenWl         = [];
-        $seenWd         = [];
+        // ── Decade distribution par personne ─────────────────────
+        $decadesPerUser = [];
 
         foreach ($profils as $profil) {
+            $user = $profil['user'];
+            $decadesPerUser[$user] = ['watchlist' => [], 'watched' => []];
+
+            $seenWl = [];
             foreach ($profil['watchlist'] as $film) {
-                $title = $film['title'];
-                if (!in_array($title, $seenWl) && !empty($film['year'])) {
+                if (!in_array($film['title'], $seenWl) && !empty($film['year'])) {
                     $d = (int)(intdiv((int)$film['year'], 10) * 10);
-                    $decades[$d] = ($decades[$d] ?? 0) + 1;
-                    $seenWl[] = $title;
+                    $decadesPerUser[$user]['watchlist'][$d] = ($decadesPerUser[$user]['watchlist'][$d] ?? 0) + 1;
+                    $seenWl[] = $film['title'];
                 }
             }
+
+            $seenWd = [];
             foreach ($profil['watched'] as $film) {
-                $title = $film['title'];
-                if (!in_array($title, $seenWd) && !empty($film['year'])) {
+                if (!in_array($film['title'], $seenWd) && !empty($film['year'])) {
                     $d = (int)(intdiv((int)$film['year'], 10) * 10);
-                    $decadesWatched[$d] = ($decadesWatched[$d] ?? 0) + 1;
-                    $seenWd[] = $title;
+                    $decadesPerUser[$user]['watched'][$d] = ($decadesPerUser[$user]['watched'][$d] ?? 0) + 1;
+                    $seenWd[] = $film['title'];
                 }
             }
         }
-        ksort($decades);
-        ksort($decadesWatched);
 
         // Per-user summary
         $userSummary = [];
@@ -142,8 +141,7 @@ class ControllerStats extends Controller
             'watchedEnCommun'     => $watchedEnCommun,
             'pourcentageWatched'  => $pourcentageWatched,
             'watchedFilms'        => $watchedFilms,
-            'decades'             => $decades,
-            'decadesWatched'      => $decadesWatched,
+            'decadesPerUser'      => $decadesPerUser,
             'userSummary'         => $userSummary,
         ]);
     }

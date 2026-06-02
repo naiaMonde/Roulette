@@ -132,10 +132,18 @@ h3 {
     color: var(--text-main);
 }
 
-.stat-badge {
-    background-color: var(--accent-color);
+.stat-badge,
+.stat-badge-vus {
     font-size: .75rem;
     min-width: 36px;
+}
+
+.stat-badge {
+    background-color: var(--accent-color);
+}
+
+.stat-badge-vus {
+    background-color: #5d6d31;
 }
 
 .dot {
@@ -152,12 +160,10 @@ h3 {
 }
 
 .decade-label {
-    width: 55px;
-    text-align: right;
-    font-weight: 600;
-    font-size: .9rem;
+    font-weight: 700;
+    font-size: .85rem;
     color: var(--text-main);
-    flex-shrink: 0;
+    letter-spacing: .5px;
 }
 
 .decade-legend {

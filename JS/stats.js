@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statsCard.innerHTML = `
             <div class="card mb-4 overflow-hidden">
                 <div class="stats-tabs-header">
-                    <button class="stats-tab-btn active" data-tab="commun">Films en commun</button>
+                    <button class="stats-tab-btn active" data-tab="commun">Watchlists</button>
                     <button class="stats-tab-btn" data-tab="vus">Films vus</button>
                     <button class="stats-tab-btn" data-tab="decades">Décennies</button>
                     <button class="stats-tab-btn" data-tab="recap">Récap</button>
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="film-title-stat">${escHtml(f.title)}</span>
                         <div class="d-flex align-items-center gap-2">
                             <span class="dots-indicator">${dots}</span>
-                            <span class="badge rounded-pill" style="background-color:#5d6d31">${f.count}/${f.total}</span>
+                            <span class="badge rounded-pill stat-badge-vus">${f.count}/${f.total}</span>
                         </div>
                     </a>`;
             });
@@ -155,59 +155,96 @@ document.addEventListener('DOMContentLoaded', () => {
         return html;
     }
 
-    function renderDecadesTab(data) {
-        const hasWl = data.decades        && Object.keys(data.decades).length > 0;
-        const hasWd = data.decadesWatched && Object.keys(data.decadesWatched).length > 0;
+    const USER_COLORS = ['#e67e22','#5d6d31','#2980b9','#8e44ad','#c0392b','#16a085'];
 
-        if (!hasWl && !hasWd) {
+    function renderDecadesTab(data) {
+        const dpu   = data.decadesPerUser || {};
+        const users = Object.keys(dpu);
+        if (users.length === 0) {
             return `<div class="text-center text-muted py-3">Aucune donnée disponible</div>`;
         }
 
-        // Merge all decade keys
-        const allDecades = [...new Set([
-            ...Object.keys(data.decades        || {}),
-            ...Object.keys(data.decadesWatched || {}),
-        ])].map(Number).sort((a, b) => b - a);
+        // All decades present across everyone
+        const allDecades = [...new Set(
+            users.flatMap(u => [
+                ...Object.keys(dpu[u].watchlist || {}),
+                ...Object.keys(dpu[u].watched   || {}),
+            ])
+        )].map(Number).sort((a, b) => b - a);
 
-        const maxCount = Math.max(
-            ...Object.values(data.decades        || {0: 0}),
-            ...Object.values(data.decadesWatched || {0: 0}),
-        );
+        // Global max for scale
+        const allCounts = users.flatMap(u => [
+            ...Object.values(dpu[u].watchlist || {}),
+            ...Object.values(dpu[u].watched   || {}),
+        ]);
+        const maxCount = allCounts.length ? Math.max(...allCounts) : 1;
 
-        let html = `
-            <div class="d-flex gap-4 justify-content-center mb-4 small fw-semibold">
-                <span><span class="decade-legend" style="background:var(--accent-color)"></span>À voir</span>
-                <span><span class="decade-legend" style="background:#5d6d31"></span>Vus</span>
-            </div>
-            <div class="d-flex flex-column gap-3">`;
-
-        allDecades.forEach(decade => {
-            const wl  = (data.decades        || {})[decade] || 0;
-            const wd  = (data.decadesWatched || {})[decade] || 0;
-            const pWl = Math.round(wl / maxCount * 100);
-            const pWd = Math.round(wd / maxCount * 100);
-
-            html += `
-                <div class="d-flex align-items-center gap-3">
-                    <div class="decade-label">${decade}s</div>
-                    <div class="flex-grow-1 d-flex flex-column gap-1">
-                        ${wl > 0 ? `
-                        <div class="progress" style="height:14px;border-radius:4px;">
-                            <div class="progress-bar" style="width:${pWl}%;background-color:var(--accent-color);border-radius:4px;font-size:.72rem;line-height:14px;">
-                                <span class="ps-1">${wl}</span>
-                            </div>
-                        </div>` : ''}
-                        ${wd > 0 ? `
-                        <div class="progress" style="height:14px;border-radius:4px;">
-                            <div class="progress-bar" style="width:${pWd}%;background-color:#5d6d31;border-radius:4px;font-size:.72rem;line-height:14px;">
-                                <span class="ps-1">${wd}</span>
-                            </div>
-                        </div>` : ''}
-                    </div>
-                </div>`;
+        // Legend
+        let legend = `<div class="d-flex gap-3 flex-wrap justify-content-center mb-4 small fw-semibold">`;
+        users.forEach((u, i) => {
+            legend += `<span><span class="decade-legend" style="background:${USER_COLORS[i % USER_COLORS.length]}"></span>${escHtml(u)}</span>`;
         });
+        legend += `</div>`;
 
+        // Toggle
+        const toggleHtml = `
+            <div class="d-flex justify-content-center mb-4">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-secondary decade-toggle active" data-mode="watchlist">À voir</button>
+                    <button class="btn btn-outline-secondary decade-toggle" data-mode="watched">Vus</button>
+                </div>
+            </div>`;
+
+        let html = legend + toggleHtml + `<div id="decades-bars" class="d-flex flex-column gap-4">`;
+        html += buildDecadeBars(allDecades, users, dpu, 'watchlist', maxCount);
         html += `</div>`;
+
+        // Bind toggle after insertion via event delegation (handled below)
+        setTimeout(() => {
+            document.querySelectorAll('.decade-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.decade-toggle').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const mode = btn.dataset.mode;
+                    document.getElementById('decades-bars').innerHTML =
+                        buildDecadeBars(allDecades, users, dpu, mode, maxCount);
+                });
+            });
+        }, 0);
+
+        return html;
+    }
+
+    function buildDecadeBars(allDecades, users, dpu, mode, maxCount) {
+        let html = '';
+        allDecades.forEach(decade => {
+            const hasAny = users.some(u => (dpu[u][mode] || {})[decade] > 0);
+            if (!hasAny) return;
+
+            html += `<div>
+                <div class="decade-label mb-1">${decade}s</div>
+                <div class="d-flex flex-column gap-1">`;
+
+            users.forEach((u, i) => {
+                const count      = (dpu[u][mode] || {})[decade] || 0;
+                const pct        = Math.round(count / maxCount * 100);
+                const color      = USER_COLORS[i % USER_COLORS.length];
+                const barInner   = count > 0
+                    ? `<div class="progress-bar" style="width:${Math.max(pct, 2)}%;background-color:${color};border-radius:4px;"></div>`
+                    : `<div class="progress-bar" style="width:100%;background-color:#f0ece6;border-radius:4px;"></div>`;
+                const countLabel = `<div style="width:28px;font-size:.72rem;text-align:left;color:${count > 0 ? color : '#bbb'};font-weight:600">${count}</div>`;
+                html += `
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:52px;font-size:.75rem;color:#888;text-align:right">${escHtml(u)}</div>
+                        <div class="flex-grow-1">
+                            <div class="progress" style="height:16px;border-radius:4px;">${barInner}</div>
+                        </div>
+                        ${countLabel}
+                    </div>`;
+            });
+
+            html += `</div></div>`;
+        });
         return html;
     }
 
@@ -234,11 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function buildDots(count, total, color = null) {
-        const style = color ? `style="color:${color}"` : '';
+        const filledClass = color ? 'dot' : 'dot dot-filled';
+        const filledStyle = color ? `style="color:${color}"` : '';
         let s = '';
         for (let i = 0; i < total; i++) {
             s += i < count
-                ? `<span class="dot" ${style}>●</span>`
+                ? `<span class="${filledClass}" ${filledStyle}>●</span>`
                 : `<span class="dot dot-empty">○</span>`;
         }
         return s;
