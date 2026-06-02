@@ -160,11 +160,13 @@ h3 {
     flex-shrink: 0;
 }
 
-.decade-bar {
-    font-size: .8rem;
-    line-height: 22px;
-    overflow: visible;
-    white-space: nowrap;
+.decade-legend {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 .recap-card {

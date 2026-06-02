@@ -43,11 +43,9 @@ class ControllerStats extends Controller
             ];
         }
 
-        // Count occurrences of each film across watchlists
-        $filmCounts  = [];
-        $filmUrls    = [];
-        $filmYears   = [];
-        $watchedAll  = [];
+        // ── Watchlist stats ──────────────────────────────────────
+        $filmCounts = [];
+        $filmUrls   = [];
 
         foreach ($profils as $profil) {
             $seen = [];
@@ -56,49 +54,73 @@ class ControllerStats extends Controller
                 if (!in_array($title, $seen)) {
                     $filmCounts[$title] = ($filmCounts[$title] ?? 0) + 1;
                     $filmUrls[$title]   = $film['url'];
-                    $filmYears[$title]  = $film['year'] ?? null;
                     $seen[]             = $title;
                 }
-            }
-            foreach ($profil['watched'] as $film) {
-                $watchedAll[$film['title']] = true;
             }
         }
 
         $totalUnique   = count($filmCounts);
-        $filmsEnCommun = 0;
-        foreach ($filmCounts as $count) {
-            if ($count >= 2) $filmsEnCommun++;
-        }
-        $pourcentage = $totalUnique > 0 ? round($filmsEnCommun / $totalUnique * 100, 1) : 0;
+        $filmsEnCommun = count(array_filter($filmCounts, fn($c) => $c >= 2));
+        $pourcentage   = $totalUnique > 0 ? round($filmsEnCommun / $totalUnique * 100, 1) : 0;
 
-        // Sort by count desc, then alphabetically
         arsort($filmCounts);
-
         $films = [];
         foreach ($filmCounts as $title => $count) {
-            $films[] = [
-                'title' => $title,
-                'url'   => $filmUrls[$title],
-                'count' => $count,
-                'total' => $nbPersonnes,
-            ];
+            $films[] = ['title' => $title, 'url' => $filmUrls[$title], 'count' => $count, 'total' => $nbPersonnes];
         }
 
-        // Decade distribution (unique films only)
-        $decades = [];
-        $seenForDecade = [];
+        // ── Watched stats ────────────────────────────────────────
+        $watchedCounts = [];
+        $watchedUrls   = [];
+
+        foreach ($profils as $profil) {
+            $seen = [];
+            foreach ($profil['watched'] as $film) {
+                $title = $film['title'];
+                if (!in_array($title, $seen)) {
+                    $watchedCounts[$title] = ($watchedCounts[$title] ?? 0) + 1;
+                    $watchedUrls[$title]   = $film['url'];
+                    $seen[]                = $title;
+                }
+            }
+        }
+
+        $totalUniqueWatched   = count($watchedCounts);
+        $watchedEnCommun      = count(array_filter($watchedCounts, fn($c) => $c >= 2));
+        $pourcentageWatched   = $totalUniqueWatched > 0 ? round($watchedEnCommun / $totalUniqueWatched * 100, 1) : 0;
+
+        arsort($watchedCounts);
+        $watchedFilms = [];
+        foreach ($watchedCounts as $title => $count) {
+            $watchedFilms[] = ['title' => $title, 'url' => $watchedUrls[$title], 'count' => $count, 'total' => $nbPersonnes];
+        }
+
+        // ── Decade distribution (watchlist + watched) ────────────
+        $decades        = [];
+        $decadesWatched = [];
+        $seenWl         = [];
+        $seenWd         = [];
+
         foreach ($profils as $profil) {
             foreach ($profil['watchlist'] as $film) {
                 $title = $film['title'];
-                if (!in_array($title, $seenForDecade) && !empty($film['year'])) {
-                    $decade = (int)(intdiv((int)$film['year'], 10) * 10);
-                    $decades[$decade] = ($decades[$decade] ?? 0) + 1;
-                    $seenForDecade[] = $title;
+                if (!in_array($title, $seenWl) && !empty($film['year'])) {
+                    $d = (int)(intdiv((int)$film['year'], 10) * 10);
+                    $decades[$d] = ($decades[$d] ?? 0) + 1;
+                    $seenWl[] = $title;
+                }
+            }
+            foreach ($profil['watched'] as $film) {
+                $title = $film['title'];
+                if (!in_array($title, $seenWd) && !empty($film['year'])) {
+                    $d = (int)(intdiv((int)$film['year'], 10) * 10);
+                    $decadesWatched[$d] = ($decadesWatched[$d] ?? 0) + 1;
+                    $seenWd[] = $title;
                 }
             }
         }
         ksort($decades);
+        ksort($decadesWatched);
 
         // Per-user summary
         $userSummary = [];
@@ -111,13 +133,18 @@ class ControllerStats extends Controller
         }
 
         echo json_encode([
-            'totalUniqueFilms' => $totalUnique,
-            'filmsEnCommun'    => $filmsEnCommun,
-            'pourcentage'      => $pourcentage,
-            'nbPersonnes'      => $nbPersonnes,
-            'films'            => $films,
-            'decades'          => $decades,
-            'userSummary'      => $userSummary,
+            'totalUniqueFilms'    => $totalUnique,
+            'filmsEnCommun'       => $filmsEnCommun,
+            'pourcentage'         => $pourcentage,
+            'nbPersonnes'         => $nbPersonnes,
+            'films'               => $films,
+            'totalUniqueWatched'  => $totalUniqueWatched,
+            'watchedEnCommun'     => $watchedEnCommun,
+            'pourcentageWatched'  => $pourcentageWatched,
+            'watchedFilms'        => $watchedFilms,
+            'decades'             => $decades,
+            'decadesWatched'      => $decadesWatched,
+            'userSummary'         => $userSummary,
         ]);
     }
 
