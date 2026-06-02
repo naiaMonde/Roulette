@@ -76,3 +76,110 @@ h3 {
     background-color: #f9f5f0;
     border: 1px dashed #d1c4b9;
 }
+
+/* ── Stats page ── */
+.stats-tabs-header {
+    gap: 2px;
+}
+
+.stats-tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 8px 16px;
+    font-size: .875rem;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    border-radius: 6px 6px 0 0;
+}
+
+.stats-tab-btn:hover {
+    color: var(--accent-color);
+}
+
+.stats-tab-btn.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+    background-color: #fff8f2;
+}
+
+.stats-big-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+.stats-film-list .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 10px 4px;
+}
+
+.stats-film-list .list-group-item:first-child {
+    border-top: none;
+}
+
+.film-title-stat {
+    font-size: .9rem;
+    color: var(--text-main);
+}
+
+.stat-badge {
+    background-color: var(--accent-color);
+    font-size: .75rem;
+    min-width: 36px;
+}
+
+.dot {
+    font-size: .7rem;
+    line-height: 1;
+}
+
+.dot-filled {
+    color: var(--accent-color);
+}
+
+.dot-empty {
+    color: #ccc;
+}
+
+.decade-label {
+    width: 55px;
+    text-align: right;
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--text-main);
+    flex-shrink: 0;
+}
+
+.decade-bar {
+    font-size: .8rem;
+    line-height: 22px;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+.recap-card {
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    background: #fdfaf5;
+}
+
+.recap-name {
+    font-weight: 600;
+    font-size: .95rem;
+    margin-bottom: 10px;
+    color: var(--text-main);
+}
+
+.recap-stats {
+    display: flex;
+    gap: 16px;
+    font-size: .875rem;
+    color: #666;
+}
