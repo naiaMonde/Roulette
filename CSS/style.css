@@ -10,6 +10,13 @@ body {
     background-color: var(--warm-bg);
     color: var(--text-main);
     font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
 }
 
 h1,
@@ -75,4 +82,50 @@ h3 {
 .upload-section {
     background-color: #f9f5f0;
     border: 1px dashed #d1c4b9;
+}
+
+.footer-credits {
+    background-color: #f8f9fa;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.06);
+    padding: 0.75rem 1rem;
+    margin-top: auto;
+    font-size: 0.82rem;
+    color: var(--text-main);
+}
+
+.footer-label {
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.footer-label .bi-heart-fill {
+    color: var(--accent-color);
+}
+
+.footer-sep {
+    color: #dee2e6;
+}
+
+.footer-dev {
+    cursor: default;
+    white-space: nowrap;
+}
+
+.footer-dev i {
+    color: var(--accent-color);
+}
+
+.footer-desc {
+    font-size: 0.73rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-left: 0.3rem;
+}
+
+.footer-wailord-img {
+    width: 0.9rem;
+    height: 0.9rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+    vertical-align: middle;
 }
