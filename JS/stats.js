@@ -47,16 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statsCard.innerHTML = `
             <div class="card mb-4 overflow-hidden">
-                <div class="stats-tabs-header d-flex border-bottom px-3 pt-3 gap-1">
-                    <button class="stats-tab-btn active" data-tab="commun">
-                        <i class="bi bi-intersect me-1"></i>Films en commun
-                    </button>
-                    <button class="stats-tab-btn" data-tab="decades">
-                        <i class="bi bi-calendar3 me-1"></i>Décennies
-                    </button>
-                    <button class="stats-tab-btn" data-tab="recap">
-                        <i class="bi bi-person-lines-fill me-1"></i>Récap
-                    </button>
+                <div class="stats-tabs-header">
+                    <button class="stats-tab-btn active" data-tab="commun">Films en commun</button>
+                    <button class="stats-tab-btn" data-tab="decades">Décennies</button>
+                    <button class="stats-tab-btn" data-tab="recap">Récap</button>
                 </div>
                 <div class="p-4" id="stats-tab-content">
                     <div id="tab-commun">${renderCommunTab(data)}</div>
