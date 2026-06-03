@@ -16,7 +16,11 @@ class ControllerAuth extends Controller
             $this->handleLogout();
             return;
         }
-        echo $this->getTwig()->render('login.html.twig');
+        $params = [];
+        if (isset($_GET['reset']) && $_GET['reset'] === 'ok') {
+            $params['success'] = "Mot de passe réinitialisé ! Vous pouvez vous connecter.";
+        }
+        echo $this->getTwig()->render('login.html.twig', $params);
     }
 
     private function handleLogin(): void
@@ -69,6 +73,7 @@ class ControllerAuth extends Controller
     private function handleRegister(): void
     {
         $pseudo  = trim($_POST['pseudo'] ?? '');
+        $email   = trim($_POST['email']  ?? '');
         $mdp     = $_POST['mdp']     ?? '';
         $confirm = $_POST['confirm'] ?? '';
         $errors  = [];
@@ -78,6 +83,9 @@ class ControllerAuth extends Controller
         }
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $pseudo)) {
             $errors[] = "Le pseudo ne peut contenir que des lettres, chiffres, - et _.";
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "L'adresse email est invalide.";
         }
         if (strlen($mdp) < 6) {
             $errors[] = "Le mot de passe doit faire au moins 6 caractères.";
@@ -95,6 +103,7 @@ class ControllerAuth extends Controller
             echo $this->getTwig()->render('login.html.twig', [
                 'register_errors' => $errors,
                 'register_pseudo' => $pseudo,
+                'register_email'  => $email,
                 'show_register'   => true,
             ]);
             return;
@@ -103,6 +112,7 @@ class ControllerAuth extends Controller
         // Création du compte
         $users[$pseudo] = [
             'password'    => password_hash($mdp, PASSWORD_DEFAULT),
+            'email'       => $email,
             'data_folder' => $pseudo,
         ];
         self::saveUsers($users);
