@@ -16,8 +16,15 @@ class ControllerProfil extends Controller
             exit;
         }
 
+        if (isset($_POST['change_username'])) $this->handleChangeUsername($user);
+
         $messages = [];
 
+        if (isset($_GET['renamed']))              $messages[] = "Pseudo changé avec succès !";
+        if (isset($_SESSION['profil_error'])) {
+            $messages[] = $_SESSION['profil_error'];
+            unset($_SESSION['profil_error']);
+        }
         if (isset($_POST['upload_action']))   $messages = $this->handleUpload($user);
         if (isset($_POST['change_password'])) $messages[] = $this->handleChangePassword($user);
         if (isset($_POST['save_friends']))    $messages[] = $this->handleSaveFriends($user);
@@ -108,6 +115,65 @@ class ControllerProfil extends Controller
         }
         fclose($f);
         return $films;
+    }
+
+    private function handleChangeUsername(string $user): void
+    {
+        $nouveau = trim($_POST['nouveau_pseudo'] ?? '');
+
+        if (strlen($nouveau) < 3) {
+            $_SESSION['profil_error'] = "Le pseudo doit faire au moins 3 caractères.";
+            header('Location: ?controleur=profil');
+            exit;
+        }
+        if (!preg_match('/^[\p{L}0-9 _-]+$/u', $nouveau)) {
+            $_SESSION['profil_error'] = "Le pseudo contient des caractères invalides.";
+            header('Location: ?controleur=profil');
+            exit;
+        }
+        if ($nouveau === $user) {
+            $_SESSION['profil_error'] = "C'est déjà ton pseudo.";
+            header('Location: ?controleur=profil');
+            exit;
+        }
+
+        $users = ControllerAuth::loadUsers();
+
+        if (isset($users[$nouveau])) {
+            $_SESSION['profil_error'] = "Ce pseudo est déjà pris.";
+            header('Location: ?controleur=profil');
+            exit;
+        }
+
+        $oldPath = "Data/{$user}";
+        $newPath = "Data/{$nouveau}";
+
+        if (is_dir($oldPath)) {
+            if (!rename($oldPath, $newPath)) {
+                $_SESSION['profil_error'] = "Impossible de renommer le dossier de données.";
+                header('Location: ?controleur=profil');
+                exit;
+            }
+        }
+
+        $userData                = $users[$user];
+        $userData['data_folder'] = $nouveau;
+        unset($users[$user]);
+
+        $newUsers = [];
+        foreach ($users as $key => $data) {
+            if (isset($data['friends'])) {
+                $data['friends'] = array_map(fn($f) => $f === $user ? $nouveau : $f, $data['friends']);
+            }
+            $newUsers[$key] = $data;
+        }
+        $newUsers[$nouveau] = $userData;
+
+        ControllerAuth::saveUsers($newUsers);
+        $_SESSION['user'] = $nouveau;
+
+        header('Location: ?controleur=profil&renamed=1');
+        exit;
     }
 
     private function handleSaveFriends(string $user): string

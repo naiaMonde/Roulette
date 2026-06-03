@@ -102,6 +102,33 @@
     </form>
 </div>
 
+{# Changer pseudo #}
+<div class="card p-4 mb-4">
+    <h2 class="h5 mb-4 border-bottom pb-2 text-uppercase" style="letter-spacing: 1px;">
+        <i class="bi bi-pencil-square me-2"></i>Changer mon pseudo
+    </h2>
+    <form method="POST">
+        <input type="hidden" name="change_username" value="1">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Pseudo actuel</label>
+                <input type="text" class="form-control form-control-sm" value="{{ user }}" disabled>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Nouveau pseudo</label>
+                <input type="text" name="nouveau_pseudo" class="form-control form-control-sm" required minlength="3">
+            </div>
+        </div>
+        <div class="text-muted small mt-2">
+            Lettres, chiffres, espaces, - et _ autorisés. Min. 3 caractères.
+        </div>
+        <button type="submit" class="btn btn-secondary mt-3"
+                onclick="return confirm('Changer ton pseudo ?')">
+            <i class="bi bi-arrow-repeat me-2"></i>Changer
+        </button>
+    </form>
+</div>
+
 {# Watchlist #}
 <div class="card p-4 mb-4">
     <h2 class="h5 mb-4 border-bottom pb-2 text-uppercase" style="letter-spacing: 1px;">
