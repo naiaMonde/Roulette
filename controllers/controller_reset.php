@@ -195,6 +195,7 @@ class ControllerReset extends Controller
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = MAIL_PORT;
             $mail->CharSet    = 'UTF-8';
+            $mail->Timeout    = 10;
 
             $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
             $mail->addAddress($to, $pseudo);

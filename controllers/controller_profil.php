@@ -21,20 +21,23 @@ class ControllerProfil extends Controller
         if (isset($_POST['upload_action']))   $messages = $this->handleUpload($user);
         if (isset($_POST['change_password'])) $messages[] = $this->handleChangePassword($user);
         if (isset($_POST['save_friends']))    $messages[] = $this->handleSaveFriends($user);
+        if (isset($_POST['save_email']))      $messages[] = $this->handleSaveEmail($user);
 
         $watched   = $this->lireCsv("Data/{$user}/watched.csv");
         $watchlist = $this->lireCsv("Data/{$user}/watchlist.csv");
 
         $allUsers = array_keys(ControllerAuth::loadUsers());
         $friends  = $this->getFriends($user);
+        $users    = ControllerAuth::loadUsers();
 
         echo $this->getTwig()->render('profil.html.twig', [
-            'user'      => $user,
-            'watched'   => $watched,
-            'watchlist' => $watchlist,
-            'messages'  => $messages,
-            'all_users' => $allUsers,
-            'friends'   => $friends,
+            'user'          => $user,
+            'watched'       => $watched,
+            'watchlist'     => $watchlist,
+            'messages'      => $messages,
+            'all_users'     => $allUsers,
+            'friends'       => $friends,
+            'current_email' => $users[$user]['email'] ?? '',
         ]);
     }
 
@@ -66,6 +69,20 @@ class ControllerProfil extends Controller
             return "Échec de l'upload de {$key}.";
         }
         return ucfirst($key) . " mis à jour avec succès.";
+    }
+
+    private function handleSaveEmail(string $user): string
+    {
+        $email = trim($_POST['email'] ?? '');
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return "Adresse email invalide.";
+        }
+
+        $users = ControllerAuth::loadUsers();
+        $users[$user]['email'] = $email;
+        ControllerAuth::saveUsers($users);
+        return "Adresse email mise à jour !";
     }
 
     private function handleChangePassword(string $user): string
