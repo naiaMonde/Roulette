@@ -34,6 +34,12 @@
                 {# CONNEXION #}
                 <div class="tab-pane fade {% if show_register is not defined %}show active{% endif %}" id="tab-login">
 
+                    {% if success is defined %}
+                        <div class="alert alert-success border-0 shadow-sm mb-3">
+                            <i class="bi bi-check-circle me-2"></i>{{ success }}
+                        </div>
+                    {% endif %}
+
                     {% if error is defined %}
                         <div class="alert alert-warning border-0 shadow-sm mb-3">
                             <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
@@ -55,6 +61,11 @@
                             <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
                         </button>
                     </form>
+                    <div class="text-center mt-3">
+                        <a href="?controleur=reset" class="text-muted small">
+                            <i class="bi bi-key me-1"></i>Mot de passe oublié ?
+                        </a>
+                    </div>
                 </div>
 
                 {# INSCRIPTION #}
@@ -76,6 +87,12 @@
                             <input type="text" name="pseudo" class="form-control"
                                    value="{{ register_pseudo ?? '' }}" required>
                             <div class="form-text">Lettres, chiffres, - et _ uniquement.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Adresse email</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ register_email ?? '' }}" required>
+                            <div class="form-text">Utilisée uniquement pour la récupération de mot de passe.</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-uppercase" style="letter-spacing: 1px;">Mot de passe</label>

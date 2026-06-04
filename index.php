@@ -17,6 +17,12 @@ try {
         $controleur = 'auth';
     }
 
+    // Autorise l'accès au reset sans être connecté
+    if ($controleur === 'reset' && ControllerAuth::isLogged()) {
+        header('Location: ?');
+        exit;
+    }
+
     if (ControllerAuth::isLogged()) {
         $twig->addGlobal('user', ControllerAuth::currentUser());
     }
