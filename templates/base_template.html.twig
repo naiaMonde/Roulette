@@ -12,6 +12,54 @@
     <link rel="shortcut icon" type="image/x-icon" href="wailordpixel.png"/>
 </head>
 
+<style>
+    .footer-credits {
+    background-color: #f8f9fa;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.06);
+    padding: 0.75rem 1rem;
+    margin-top: auto;
+    font-size: 0.82rem;
+    color: var(--text-main);
+}
+
+.footer-label {
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.footer-label .bi-heart-fill {
+    color: var(--accent-color);
+}
+
+.footer-sep {
+    color: #dee2e6;
+}
+
+.footer-dev {
+    cursor: default;
+    white-space: nowrap;
+}
+
+.footer-dev i {
+    color: var(--accent-color);
+}
+
+.footer-desc {
+    font-size: 0.73rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-left: 0.3rem;
+}
+
+.footer-wailord-img {
+    width: 0.9rem;
+    height: 0.9rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+    vertical-align: middle;
+}
+</style>
+
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="?">
@@ -45,12 +93,34 @@
     </nav>
 
 <body>
-    <div class="container" style="max-width: 900px;">
+    <div class="container main-content" style="max-width: 900px;">
         {% block body %}{% endblock %}
     </div>
+
+    <footer class="footer-credits">
+        <div class="container d-flex justify-content-center align-items-center gap-3">
+            <span class="footer-label"><i class="bi bi-heart-fill me-1"></i>Développé avec amour par</span>
+            <span class="footer-sep">—</span>
+            <span class="footer-dev">
+                <i class="bi bi-cookie me-1"></i><strong>Coukie_man</strong>
+                <span class="footer-desc">naine à ses heures perdues</span>
+            </span>
+            <span class="footer-sep">·</span>
+            <span class="footer-dev">
+                <i class="bi bi-lightning-charge me-1"></i><strong>TheAtomic</strong>
+                <span class="footer-desc">100% non-toxique certifié par lui-même</span>
+            </span>
+            <span class="footer-sep">·</span>
+            <span class="footer-dev">
+                <img src="wailordpixel.png" class="footer-wailord-img me-1" alt="Wailord"><strong>Wailord</strong>
+                <span class="footer-desc">notre seigneur bleu de 14.5m, il n'a pas codé mais on lui doit tout</span>
+            </span>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="JS/script.js"></script>
     {% block extra_scripts %}{% endblock %}
+    <script>document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));</script>
 </body>
 </html>
