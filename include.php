@@ -2,10 +2,11 @@
 
 // Contrôleurs
 require_once 'controllers/controller.class.php';
-require_once 'controllers\controller_utilisateur.php';
+require_once 'controllers/controller_utilisateur.php';
 require_once 'controllers/controller_factory.class.php';
 require_once 'controllers/controller_auth.php';
 require_once 'controllers/controller_profil.php';
+require_once 'controllers/controller_stats.php';
 
 // Autoload Composer (Twig, Symfony YAML, etc.)
 require_once 'vendor/autoload.php';
